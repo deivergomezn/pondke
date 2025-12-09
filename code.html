@@ -114,7 +114,7 @@ function updateUI() {
 // Ir a tienda (store.html)
 // ==========================
 function goToStore() {
-    if (user.coins < 100) {
+    if (user.coins < 10) {
         showModal("Necesitas al menos <b>100 monedas</b> para acceder a la tienda.");
         return;
     }
