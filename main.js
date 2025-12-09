@@ -1,103 +1,64 @@
-/* ============================================================
-   UTILIDADES BÁSICAS
-============================================================ */
+// Crear o recuperar usuario
+function enter() {
+    const email = document.getElementById("email").value.trim();
 
-function getCurrentUserEmail() {
-    return localStorage.getItem("pondke_email");
-}
-
-function getUserData(email) {
-    const data = localStorage.getItem("pondke_user_" + email);
-    return data ? JSON.parse(data) : null;
-}
-
-function saveUserData(email, data) {
-    localStorage.setItem("pondke_user_" + email, JSON.stringify(data));
-}
-
-/* ============================================================
-   OBTENER CÓDIGO DESDE URL (QR)
-============================================================ */
-
-function getCodeFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get("code"); // ej: ABC123
-}
-
-/* ============================================================
-   ENVÍO DE CORREO AUTOMÁTICO CON EMAILJS
-============================================================ */
-
-function sendCodeEmail(email, code) {
-    return emailjs.send("service_mz6ny8f", "template_53z69hb", {
-        email: email,
-        code: code
-    });
-}
-
-/* ============================================================
-   index.html — LOGIN Y PROCESO DE REGISTRO
-============================================================ */
-
-async function loginEmail() {
-    const emailInput = document.getElementById("email").value.trim();
-    if (!emailInput) return alert("Ingresa un email.");
-
-    let user = getUserData(emailInput);
-
-    if (!user) {
-        user = { coins: 0, codesUsed: [] };
+    // Validación: campo vacío
+    if (!email) {
+        showModal("Debes ingresar un correo.");
+        return;
     }
 
-    const code = getCodeFromURL(); // el QR envía el código
-    if (code) {
-        if (!user.codesUsed.includes(code)) {
-            // sumar monedas
-            user.coins += 10;
-            user.codesUsed.push(code);
+    // Validación: solo Gmail o Hotmail
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@(gmail|hotmail)\.com$/;
 
-            // enviar correo AUTOMÁTICO
-            try {
-                await sendCodeEmail(emailInput, code);
-            } catch (err) {
-                console.error("Error enviando email:", err);
-                alert("No se pudo enviar el correo. Intenta otra vez.");
-                return;
-            }
-        }
+    if (!emailRegex.test(email)) {
+        showModal("Por favor ingresa un correo válido de <b>Gmail</b> o <b>Hotmail</b>.");
+        return;
     }
 
-    // guardar cambios
-    saveUserData(emailInput, user);
+    let users = JSON.parse(localStorage.getItem("pondke_users")) || {};
 
-    // guardar email actual
-    localStorage.setItem("pondke_email", emailInput);
+    // Si el usuario NO existe → se crea
+    if (!users[email]) {
+        users[email] = {
+            coins: 0,
+            used: []
+        };
+        showModal("Usuario creado exitosamente.");
+    } 
+    // Si el usuario ya existe
+    else {
+        showModal("Bienvenido de nuevo.");
+    }
 
-    // redirigir al historial
-    window.location.href = "code.html";
+    // Guardar usuario
+    localStorage.setItem("pondke_users", JSON.stringify(users));
+    localStorage.setItem("pondke_current", email);
+
+    // Redirigir después de cerrar el modal
+    setTimeout(() => {
+        window.location.href = "code.html";
+    }, 1500);
 }
 
-/* ============================================================
-   code.html — MOSTRAR HISTORIAL + BOTÓN COMPRAR
-============================================================ */
 
-function loadUserData() {
-    const email = getCurrentUserEmail();
-    if (!email) return window.location.href = "index.html";
+// -------------------------------
+//        FUNCIONES DEL MODAL
+// -------------------------------
 
-    const user = getUserData(email);
-    updateUI(user);
+function showModal(message) {
+    document.getElementById("modal-text").innerHTML = message;
+    document.getElementById("modal").style.display = "block";
 }
 
-function updateUI(user) {
-    document.getElementById("coins").textContent = user.coins;
+function closeModal() {
+    document.getElementById("modal").style.display = "none";
+}
 
-    document.getElementById("history").innerHTML = user.codesUsed
-        .map(c => `<li>${c}</li>`)
-        .join("");
-
-    const buyBtn = document.getElementById("buyButton");
-    if (buyBtn) {
-        buyBtn.style.display = user.coins >= 100 ? "block" : "none";
+// Cerrar clic fuera
+window.onclick = function(event) {
+    if (event.target === document.getElementById("modal")) {
+        closeModal();
     }
 }
+
