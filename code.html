@@ -9,7 +9,7 @@
 
 <div class="container">
     
-<b>${usedCodesGlobal[code]}</b>
+<b id="email"></b>
     
     <p class="info">
         Tu progreso se guardará <b>solo en este navegador</b> usando almacenamiento local.
@@ -54,6 +54,7 @@ let user = users[email];
 // ==========================
 updateUI();
 
+    
 // ==========================
 // Validar código
 // ==========================
@@ -110,6 +111,7 @@ function updateUI() {
 
     // Mostrar botón de tienda si tiene 100 monedas o más
     document.getElementById("buyBtn").style.display = (user.coins >= 10) ? "block" : "none";
+    document.getElementById("email").innerText = localStorage.getItem("email") || "Sin email.";
 }
 
 // ==========================
