@@ -9,6 +9,8 @@
 
 <div class="container">
     
+<b>${usedCodesGlobal[code]}</b>
+    
     <p class="info">
         Tu progreso se guardará <b>solo en este navegador</b> usando almacenamiento local.
         <br>
@@ -74,7 +76,7 @@ async function validateCode() {
 
     // Verificar si el código ya fue usado por cualquier usuario
     if (usedCodesGlobal[code]) {
-        showModal(`Este código ya fue canjeado por otro usuario:<br><b>${usedCodesGlobal[code]}</b>`);
+        showModal(`Este código ya fue canjeado por otro usuario:`);
         return;
     }
 
@@ -107,7 +109,7 @@ function updateUI() {
     document.getElementById("history").innerHTML = list;
 
     // Mostrar botón de tienda si tiene 100 monedas o más
-    document.getElementById("buyBtn").style.display = (user.coins >= 100) ? "block" : "none";
+    document.getElementById("buyBtn").style.display = (user.coins >= 10) ? "block" : "none";
 }
 
 // ==========================
@@ -115,7 +117,7 @@ function updateUI() {
 // ==========================
 function goToStore() {
     if (user.coins < 10) {
-        showModal("Necesitas al menos <b>100 monedas</b> para acceder a la tienda.");
+        showModal("Necesitas al menos <b>10 monedas</b> para acceder a la tienda.");
         return;
     }
 
