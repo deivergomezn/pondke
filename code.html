@@ -32,7 +32,6 @@
 </div>
 
 <script src="main.js"></script>
-
 <script>
 // ==========================
 // Obtener usuario actual
@@ -59,7 +58,7 @@ async function validateCode() {
     let code = document.getElementById("code").value.trim();
 
     if (code.length !== 6) {
-        showModal("El código debe tener exactamente <b>6 dígitos</b>.");
+        alert("El código debe tener 6 dígitos.");
         return;
     }
 
@@ -68,13 +67,13 @@ async function validateCode() {
     const validCodes = await res.json();
 
     if (!validCodes.includes(code)) {
-        showModal("El código ingresado es <b>inválido</b>.");
+        alert("Código inválido.");
         return;
     }
 
     // Verificar si el código ya fue usado por cualquier usuario
     if (usedCodesGlobal[code]) {
-        showModal(`Este código ya fue canjeado por otro usuario:<br><b>${usedCodesGlobal[code]}</b>`);
+        alert(`Este código ya fue canjeado por otro usuario: ${usedCodesGlobal[code]}`);
         return;
     }
 
@@ -90,7 +89,7 @@ async function validateCode() {
     localStorage.setItem("pondke_users", JSON.stringify(users));
     localStorage.setItem("usedCodesGlobal", JSON.stringify(usedCodesGlobal));
 
-    showModal("¡Código válido!<br><b>+10 monedas</b>");
+    alert("Código válido! +10 monedas");
 
     document.getElementById("code").value = "";
     updateUI();
@@ -107,7 +106,11 @@ function updateUI() {
     document.getElementById("history").innerHTML = list;
 
     // Mostrar botón de tienda si tiene 100 monedas o más
-    document.getElementById("buyBtn").style.display = (user.coins >= 100) ? "block" : "none";
+    if (user.coins >= 100) {
+        document.getElementById("buyBtn").style.display = "block";
+    } else {
+        document.getElementById("buyBtn").style.display = "none";
+    }
 }
 
 // ==========================
@@ -115,7 +118,7 @@ function updateUI() {
 // ==========================
 function goToStore() {
     if (user.coins < 100) {
-        showModal("Necesitas al menos <b>100 monedas</b> para acceder a la tienda.");
+        alert("Necesitas al menos 100 monedas para acceder a la tienda.");
         return;
     }
 
@@ -126,20 +129,7 @@ function goToStore() {
     // Redirigir a store.html
     window.location.href = "store.html";
 }
-
 </script>
 
-
-    
-<!-- Modal de alerta -->
-<div id="modal" class="modal">
-    <div class="modal-content">
-        <span class="modal-close" onclick="closeModal()">&times;</span>
-        <p id="modal-text"></p>
-    </div>
-</div>
-
-
-    
 </body>
 </html>
