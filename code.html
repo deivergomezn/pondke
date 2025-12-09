@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Pondké – Códigos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+    
+    <p class="info">
+        Tu progreso se guardará <b>solo en este navegador</b> usando almacenamiento local.
+        <br>
+        No se envían datos a ningún servidor.
+    </p>
+    
+    <h2>Canjear Código</h2>
+
+    <p id="coins" style="font-size:20px; font-weight:bold;">Monedas: 0</p>
+
+    <input id="code" maxlength="6" placeholder="Código de 6 dígitos">
+    <button onclick="validateCode()">Enviar</button>
+
+    <h3>Historial</h3>
+    <ul id="history"></ul>
+
+    <button id="buyBtn" style="background:#0069d9; display:none;" onclick="goToStore()">
+        Ir a la tienda 🛒
+    </button>
+
+</div>
+
+<script src="main.js"></script>
+
+<script>
+// ==========================
+// Obtener usuario actual
+// ==========================
+let email = localStorage.getItem("pondke_current");
+let users = JSON.parse(localStorage.getItem("pondke_users")) || {};
+let usedCodesGlobal = JSON.parse(localStorage.getItem("usedCodesGlobal")) || {};
+
+if (!email || !users[email]) {
+    window.location.href = "index.html";
+}
+
+let user = users[email];
+
+// ==========================
+// Actualizar UI inicial
+// ==========================
+updateUI();
+
+// ==========================
+// Validar código
+// ==========================
+async function validateCode() {
+    let code = document.getElementById("code").value.trim();
+
+    if (code.length !== 6) {
+        showModal("El código debe tener exactamente <b>6 dígitos</b>.");
+        return;
+    }
+
+    // Cargar códigos válidos desde codes.json
+    const res = await fetch("codes.json");
+    const validCodes = await res.json();
+
+    if (!validCodes.includes(code)) {
+        showModal("El código ingresado es <b>inválido</b>.");
+        return;
+    }
+
+    // Verificar si el código ya fue usado por cualquier usuario
+    if (usedCodesGlobal[code]) {
+        showModal(`Este código ya fue canjeado por otro usuario:<br><b>${usedCodesGlobal[code]}</b>`);
+        return;
+    }
+
+    // Registrar código
+    user.used.push(code);
+    user.coins += 10;
+    users[email] = user;
+
+    // Registrar globalmente
+    usedCodesGlobal[code] = email;
+
+    // Guardar en localStorage
+    localStorage.setItem("pondke_users", JSON.stringify(users));
+    localStorage.setItem("usedCodesGlobal", JSON.stringify(usedCodesGlobal));
+
+    showModal("¡Código válido!<br><b>+10 monedas</b>");
+
+    document.getElementById("code").value = "";
+    updateUI();
+}
+
+// ==========================
+// Actualizar interfaz
+// ==========================
+function updateUI() {
+    document.getElementById("coins").innerText = "Monedas: " + user.coins;
+
+    let list = "";
+    user.used.forEach(c => list += `<li>${c}</li>`);
+    document.getElementById("history").innerHTML = list;
+
+    // Mostrar botón de tienda si tiene 100 monedas o más
+    document.getElementById("buyBtn").style.display = (user.coins >= 100) ? "block" : "none";
+}
+
+// ==========================
+// Ir a tienda (store.html)
+// ==========================
+function goToStore() {
+    if (user.coins < 100) {
+        showModal("Necesitas al menos <b>100 monedas</b> para acceder a la tienda.");
+        return;
+    }
+
+    // Guardar progreso antes de ir a la tienda
+    users[email] = user;
+    localStorage.setItem("pondke_users", JSON.stringify(users));
+
+    // Redirigir a store.html
+    window.location.href = "store.html";
+}
+
+</script>
+
+
+    
+<!-- Modal de alerta -->
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <p id="modal-text"></p>
+    </div>
+</div>
+
+
+    
+</body>
+</html>
